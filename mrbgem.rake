@@ -38,6 +38,7 @@ end
 MRuby::Gem::Specification.new('mruby-require') do |spec|
   spec.license = 'MIT'
   spec.authors = 'mattn'
+  spec.version = '0.1.0'
   ENV["MRUBY_REQUIRE"] = ""
 
   is_vc = ENV['OS'] == 'Windows_NT' && cc.command =~ /^cl(\.exe)?$/
