@@ -52,15 +52,14 @@ MRuby::Gem::Specification.new('mruby-require') do |spec|
     # Only gems included AFTER the mruby-require gem during compilation are
     # compiled as separate objects.
     gems_uniq   = gems.uniq {|x| x.name}
-    mr_position = gems_uniq.find_index {|g| g.name == "mruby-require" }
+	mr_position = gems_uniq.find_index {|g| g.name == "mruby-require" }
     mr_position = -1 if mr_position.nil?
     compiled_in = gems_uniq[0..mr_position].map {|g| g.name}
     white_list = ["mruby-require", "mruby-test", "mruby-bin-mrbc"]
-    @bundled    = gems_uniq.reject {|g| compiled_in.include?(g.name)}
-    gems.reject! {|g| !compiled_in.include?(g.name) and !white_list.include?(g.name)}
-
-    libmruby_libs      = spec.linker.libraries
-    libmruby_lib_paths = spec.linker.library_paths
+	@bundled    = gems_uniq.reject {|g| compiled_in.include?(g.name)}
+	gems.reject! {|g| !compiled_in.include?(g.name) and !white_list.include?(g.name)}
+    libmruby_libs      = MRuby.targets["host"].linker.libraries
+    libmruby_lib_paths = MRuby.targets["host"].linker.library_paths
     gems_uniq.each do |g|
       unless g.name == "mruby-require"
         begin
@@ -121,13 +120,12 @@ MRuby::Gem::Specification.new('mruby-require') do |spec|
     end
   end
 
-  next if spec.cc.flags.flatten.find {|e| e.match /DMRBGEMS_ROOT/}
-
-  target = build.respond_to?(:host_target) ? build.host_target : RUBY_PLATFORM
-  if target.downcase !~ /mswin(?!ce)|mingw|bccwin/
-    spec.linker.libraries << ['dl']
-    spec.cc.flags << "-DMRBGEMS_ROOT=\\\"#{File.expand_path top_build_dir}/lib\\\""
-  else
-    spec.cc.flags << "-DMRBGEMS_ROOT=\"\"\\\"#{File.expand_path top_build_dir}/lib\\\"\"\""
+  unless spec.cc.flags.flatten.find {|e| e.match /DMRBGEMS_ROOT/}
+    if (build.respond_to?(:host_target) ? build.host_target : RUBY_PLATFORM).downcase !~ /mswin(?!ce)|mingw|bccwin/
+      spec.linker.libraries << ['dl']
+      spec.cc.flags << "-DMRBGEMS_ROOT=\\\"#{File.expand_path top_build_dir}/lib\\\""
+    else
+      spec.cc.flags << "-DMRBGEMS_ROOT=\"\"\\\"#{File.expand_path top_build_dir}/lib\\\"\"\""
+    end
   end
 end
